@@ -1,4 +1,4 @@
-This script formats hashcat cracked hashe output into two tables:<br>
+This script formats hashcat cracked output into two tables:<br>
 * Password length analysis<br>
 * Character set analysis<br>
 
