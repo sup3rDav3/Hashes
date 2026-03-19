@@ -1,9 +1,123 @@
-This script formats hashcat cracked output into two tables:<br>
-* Password length analysis<br>
-* Character set analysis<br>
+# 🔐 Hashcat Password Analysis Tool
 
-Run with:<br>
-python3 hash_analsis.py hashes.txt (or whatever the cracked out file is named)
+A Python script that parses Hashcat cracked output files and generates a detailed analysis of password lengths and character set composition — useful for pentest reporting and password audit findings.
 
-<img width="600" height="771" alt="image" src="https://github.com/user-attachments/assets/8828123c-26c3-46b1-93c8-3b5887ff6944" />
+---
 
+## 📋 Features
+
+- Parses both `username:hash:password` and `hash:password` formats automatically
+- **Password Length Analysis** — counts and percentages by character length
+- **Character Set Analysis** — categorizes passwords by complexity (lowercase, uppercase, numbers, special characters, and combinations)
+- **Blank Password Detection** — identifies and lists accounts with no password set
+- Clean, formatted terminal output ready for screenshots in reports
+
+---
+
+## 📁 Supported Input Formats
+
+Generated from Hashcat using the `--username` flag:
+```
+Administrator:64f12cddaa88057e06a81b54e73b949b:Password123
+jsmith:b4b9b02e6f09a9bd760f388b67351e2b:Summer2023!
+```
+
+Or standard Hashcat output without usernames:
+```
+64f12cddaa88057e06a81b54e73b949b:Password123
+b4b9b02e6f09a9bd760f388b67351e2b:Summer2023!
+```
+
+---
+
+## 🚀 Usage
+
+**Step 1 — Export cracked results from Hashcat:**
+```bash
+hashcat -m 1000 hashes.txt rockyou.txt --username --show > cracked.txt
+```
+
+**Step 2 — Run the analysis script:**
+```bash
+python3 hashcat_analysis.py cracked.txt
+```
+
+---
+
+## 📊 Sample Output
+
+```
+===================================
+    Password Length Analysis
+===================================
+   Length      Count    % of Total
+-----------------------------------
+     5            1        2.0%
+     6           23       46.0%
+     7            8       16.0%
+     8           13       26.0%
+     9            3        6.0%
+    11            2        4.0%
+-----------------------------------
+   Total         50
+===================================
+
+======================================================
+           Character Set Analysis
+======================================================
+  Category                  Count    % of Total
+------------------------------------------------------
+  Lowercase Only              18       36.0%
+  Numbers Only                 2        4.0%
+  Lower + Numbers             24       48.0%
+  Mixed Case + Numbers         4        8.0%
+  Lower + Numbers + Special    2        4.0%
+------------------------------------------------------
+  Total                       50
+======================================================
+
+*** WARNING: 1 account(s) found with no password set! ***
+  Accounts with blank passwords:
+    - bjones
+```
+
+---
+
+## 🗂️ Character Set Categories
+
+| Category | Example |
+|----------|---------|
+| Lowercase Only | `password` |
+| Uppercase Only | `PASSWORD` |
+| Numbers Only | `123456` |
+| Lower + Numbers | `abc123` |
+| Upper + Numbers | `ABC123` |
+| Mixed Case | `PassWord` |
+| Mixed Case + Numbers | `Password123` |
+| Lower + Special | `password!` |
+| Upper + Special | `PASSWORD!` |
+| Numbers + Special | `1234!` |
+| Mixed Case + Special | `PassWord!` |
+| Lower + Numbers + Special | `abc123!` |
+| Upper + Numbers + Special | `ABC123!` |
+| Mixed Case + Numbers + Special | `Password123!` |
+| Special Only | `!!!` |
+
+---
+
+## ⚙️ Requirements
+
+- Python 3.6+
+- No external libraries required — standard library only
+
+---
+
+## ⚠️ Disclaimer
+
+This tool is intended for use during **authorized penetration testing and security assessments only**. Always ensure you have written permission before testing any systems or analyzing credentials. Unauthorized use is illegal and unethical.
+
+---
+
+## 📄 License
+
+MIT License — free to use and modify.
