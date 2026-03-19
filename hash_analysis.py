@@ -44,11 +44,25 @@ def parse_hashcat_output(filename):
 def categorize_password(password):
     has_lower = any(c.islower() for c in password)
     has_upper = any(c.isupper() for c in password)
-    has_digit = any(c.isdigit() for c in password)
+    has_digit = any(c in '0123456789' for c in password)
     has_special = any(not c.isalnum() for c in password)
 
-    if has_special:
-        return "Special Chars"
+    if has_special and has_upper and has_lower and has_digit:
+        return "Mixed Case + Numbers + Special"
+    elif has_special and has_lower and has_digit:
+        return "Lower + Numbers + Special"
+    elif has_special and has_upper and has_digit:
+        return "Upper + Numbers + Special"
+    elif has_special and has_upper and has_lower:
+        return "Mixed Case + Special"
+    elif has_special and has_digit:
+        return "Numbers + Special"
+    elif has_special and has_lower:
+        return "Lower + Special"
+    elif has_special and has_upper:
+        return "Upper + Special"
+    elif has_special:
+        return "Special Only"
     elif has_upper and has_lower and has_digit:
         return "Mixed Case + Numbers"
     elif has_upper and has_lower:
@@ -98,7 +112,14 @@ def print_charset_table(passwords, total):
         "Upper + Numbers",
         "Mixed Case",
         "Mixed Case + Numbers",
-        "Special Chars",
+        "Lower + Special",
+        "Upper + Special",
+        "Numbers + Special",
+        "Mixed Case + Special",
+        "Lower + Numbers + Special",
+        "Upper + Numbers + Special",
+        "Mixed Case + Numbers + Special",
+        "Special Only",
         "Other"
     ]
 
@@ -106,7 +127,7 @@ def print_charset_table(passwords, total):
     for p in passwords:
         counts[categorize_password(p)] += 1
 
-    col1 = 24
+    col1 = 32
     col2 = 10
     col3 = 12
     table_width = col1 + col2 + col3
