@@ -1,0 +1,163 @@
+#!/usr/bin/env python3
+
+import sys
+from collections import defaultdict
+
+def parse_hashcat_output(filename):
+    length_counts = defaultdict(int)
+    passwords = []
+    empty_users = []
+    total = 0
+    skipped = 0
+    empty_count = 0
+
+    with open(filename, 'r', encoding='utf-8', errors='ignore') as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+
+            parts = line.split(':')
+
+            if len(parts) == 3:
+                username = parts[0]
+                password = parts[2]
+            elif len(parts) == 2:
+                username = None
+                password = parts[1]
+            else:
+                skipped += 1
+                continue
+
+            if not password:
+                empty_count += 1
+                empty_users.append(username if username else "unknown")
+                continue
+
+            length_counts[len(password)] += 1
+            passwords.append(password)
+            total += 1
+
+    return length_counts, passwords, total, skipped, empty_count, empty_users
+
+
+def categorize_password(password):
+    has_lower = any(c.islower() for c in password)
+    has_upper = any(c.isupper() for c in password)
+    has_digit = any(c.isdigit() for c in password)
+    has_special = any(not c.isalnum() for c in password)
+
+    if has_special:
+        return "Special Chars"
+    elif has_upper and has_lower and has_digit:
+        return "Mixed Case + Numbers"
+    elif has_upper and has_lower:
+        return "Mixed Case"
+    elif has_upper and has_digit:
+        return "Upper + Numbers"
+    elif has_lower and has_digit:
+        return "Lower + Numbers"
+    elif has_upper:
+        return "Uppercase Only"
+    elif has_lower:
+        return "Lowercase Only"
+    elif has_digit:
+        return "Numbers Only"
+    else:
+        return "Other"
+
+
+def print_length_table(length_counts, total):
+    col1 = 12
+    col2 = 12
+    col3 = 12
+    table_width = col1 + col2 + col3 + 1
+
+    print("\n" + "=" * table_width)
+    print(f"{'Password Length Analysis':^{table_width}}")
+    print("=" * table_width)
+    print(f"{'Length':^{col1}}{'Count':^{col2}}{'% of Total':^{col3}}")
+    print("-" * table_width)
+
+    for length in sorted(length_counts.keys()):
+        count = length_counts[length]
+        pct = (count / total) * 100
+        print(f"{str(length):^{col1}}{str(count):^{col2}}{f'{pct:.1f}%':^{col3}}")
+
+    print("-" * table_width)
+    print(f"{'Total':^{col1}}{str(total):^{col2}}")
+    print("=" * table_width)
+
+
+def print_charset_table(passwords, total):
+    category_order = [
+        "Lowercase Only",
+        "Uppercase Only",
+        "Numbers Only",
+        "Lower + Numbers",
+        "Upper + Numbers",
+        "Mixed Case",
+        "Mixed Case + Numbers",
+        "Special Chars",
+        "Other"
+    ]
+
+    counts = defaultdict(int)
+    for p in passwords:
+        counts[categorize_password(p)] += 1
+
+    col1 = 24
+    col2 = 10
+    col3 = 12
+    table_width = col1 + col2 + col3
+
+    print("\n" + "=" * table_width)
+    print(f"{'Character Set Analysis':^{table_width}}")
+    print("=" * table_width)
+    print(f"{'  Category':<{col1}}{'Count':^{col2}}{'% of Total':^{col3}}")
+    print("-" * table_width)
+
+    for category in category_order:
+        count = counts.get(category, 0)
+        if count == 0:
+            continue
+        pct = (count / total) * 100
+        print(f"{'  ' + category:<{col1}}{str(count):^{col2}}{f'{pct:.1f}%':^{col3}}")
+
+    print("-" * table_width)
+    print(f"{'  Total':<{col1}}{str(total):^{col2}}")
+    print("=" * table_width)
+
+
+def print_empty_warning(empty_users, empty_count):
+    print(f"\n*** WARNING: {empty_count} account(s) found with no password set! ***")
+    print("  Accounts with blank passwords:")
+    for user in empty_users:
+        print(f"    - {user}")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python3 hashcat_analysis.py <hashcat_output_file>")
+        sys.exit(1)
+
+    filename = sys.argv[1]
+
+    try:
+        length_counts, passwords, total, skipped, empty_count, empty_users = parse_hashcat_output(filename)
+    except FileNotFoundError:
+        print(f"Error: File '{filename}' not found.")
+        sys.exit(1)
+
+    if total == 0:
+        print("No cracked passwords found in the file.")
+        sys.exit(1)
+
+    if skipped > 0:
+        print(f"Note: Skipped {skipped} unrecognized line(s).")
+
+    print_length_table(length_counts, total)
+    print_charset_table(passwords, total)
+
+    if empty_count > 0:
+        print_empty_warning(empty_users, empty_count)
