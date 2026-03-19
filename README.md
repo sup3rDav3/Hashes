@@ -5,4 +5,5 @@ This script formats hashcat cracked output into two tables:<br>
 Run with:<br>
 python3 hash_analsis.py hashes.txt (or whatever the cracked out file is named)
 
-<img width="596" height="769" alt="image" src="https://github.com/user-attachments/assets/b166a2e9-9bc6-4b90-a270-ee316878cc83" />
+<img width="600" height="771" alt="image" src="https://github.com/user-attachments/assets/8828123c-26c3-46b1-93c8-3b5887ff6944" />
+
