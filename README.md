@@ -10,6 +10,7 @@ A Python script that parses Hashcat cracked output files and generates a detaile
 - **Password Length Analysis** — counts and percentages by character length
 - **Character Set Analysis** — categorizes passwords by complexity (lowercase, uppercase, numbers, special characters, and combinations)
 - **Blank Password Detection** — identifies and lists accounts with no password set
+- **Weak Password Detection** — flags accounts with passwords at or under a specified length via `--weak`
 - Clean, formatted terminal output ready for screenshots in reports
 
 ---
@@ -42,43 +43,68 @@ hashcat -m 1000 hashes.txt rockyou.txt --username --show > cracked.txt
 python3 hashcat_analysis.py cracked.txt
 ```
 
+**Optional — Flag accounts with weak passwords using `--weak`:**
+```bash
+python3 hashcat_analysis.py cracked.txt --weak 8
+```
+
+This will flag any account with a password of 8 characters or fewer at the bottom of the output.
+
 ---
 
 ## 📊 Sample Output
 
 ```
-===================================
-    Password Length Analysis
-===================================
-   Length      Count    % of Total
------------------------------------
-     5            1        2.0%
-     6           23       46.0%
-     7            8       16.0%
-     8           13       26.0%
-     9            3        6.0%
-    11            2        4.0%
------------------------------------
-   Total         50
-===================================
+=====================================
+      Password Length Analysis
+=====================================
+   Length      Count     % of Total
+-------------------------------------
+     2           1          1.0%
+     3           2          2.0%
+     4           1          1.0%
+     5           4          4.0%
+     6           27        27.3%
+     7           19        19.2%
+     8           25        25.3%
+     9           13        13.1%
+     10          3          3.0%
+     11          3          3.0%
+     12          1          1.0%
+-------------------------------------
+   Total         99
+=====================================
 
 ======================================================
            Character Set Analysis
 ======================================================
-  Category                  Count    % of Total
+  Category                        Count    % of Total
 ------------------------------------------------------
-  Lowercase Only              18       36.0%
-  Numbers Only                 2        4.0%
-  Lower + Numbers             24       48.0%
-  Mixed Case + Numbers         4        8.0%
-  Lower + Numbers + Special    2        4.0%
+  Lowercase Only                    47       47.5%
+  Uppercase Only                     1        1.0%
+  Numbers Only                       2        2.0%
+  Lower + Numbers                   20       20.2%
+  Mixed Case + Numbers               6        6.1%
+  Mixed Case + Numbers + Special    23       23.2%
 ------------------------------------------------------
-  Total                       50
+  Total                             99
 ======================================================
 
 *** WARNING: 1 account(s) found with no password set! ***
   Accounts with blank passwords:
     - bjones
+
+*** WARNING: 8 account(s) with passwords <= 5 characters ***
+  Username             Password Length
+  ------------------ ---------------
+  qadams                      2
+  mwilliams                   3
+  svc_sql                     3
+  temp_user                   4
+  dsanchez                    5
+  lmorris                     5
+  BobbyPin                    5
+  lhall                       5
 ```
 
 ---
